@@ -1,0 +1,112 @@
+from random import shuffle
+
+class Carta:
+    valores = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    naipes = ['Copas', 'Ouros', 'Paus', 'Espadas']
+    def __init__(self, valor, naipe):
+        self.valor = valor
+        self.naipe = naipe
+    def __lt__(self, other):
+        if Carta.naipes.index(self.naipe) == Carta.naipes.index(other.naipe):
+            return Carta.valores.index(self.valor) < Carta.valores.index(other.valor)
+        else:
+            return Carta.naipes.index(self.naipe) < Carta.naipes.index(other.naipe)
+    def __gt__(self, other):
+        if Carta.naipes.index(self.naipe) == Carta.naipes.index(other.naipe):
+            return Carta.valores.index(self.valor) > Carta.valores.index(other.valor)
+        else:
+            return Carta.naipes.index(self.naipe) > Carta.naipes.index(other.naipe)
+    def __str__(self):
+        return f"{self.valor} de {self.naipe}"
+       
+class Baralho:
+    def __init__(self):
+        self.cartas = [Carta(valor, naipe) for valor in Carta.valores for naipe in Carta.naipes]
+    def embaralhar(self):
+        shuffle(self.cartas)
+    def retirar_carta(self):
+        print("Retirando uma carta do baralho...")
+        return self.cartas.pop(0)
+    def organizar(self):
+        self.cartas.sort()
+
+def blackjack():
+    baralho = Baralho()
+    jogador_hand = []
+    dealer_hand = []
+    jogador_points = 0
+    dealer_points = 0
+    escolhas_as = 0
+
+    print("Bem-vindo ao jogo de Blackjack!")
+    baralho.embaralhar()
+    print("O baralho foi embaralhado. Vamos começar o jogo!")
+    #distribuir as cartas iniciais para o jogador e o dealer
+    for c in range(2):
+        jogador_hand.append(baralho.retirar_carta())
+        dealer_hand.append(baralho.retirar_carta())
+    #mostrar as cartas do jogador e a primeira carta do dealer
+    print(f"Cartas do dealer: {dealer_hand[0]} e uma carta oculta")
+    print(f"Suas cartas: {jogador_hand[0]} e {jogador_hand[1]}")
+    #calcular os pontos iniciais do jogador e do dealer
+    jogador_points = sum(10 if carta.valor in ['10', 'J', 'Q', 'K'] else 11 if carta.valor == 'A' else int(carta.valor) for carta in jogador_hand)
+    dealer_points = sum(10 if carta.valor in ['10', 'J', 'Q', 'K'] else 11 if carta.valor == 'A' else int(carta.valor) for carta in dealer_hand)
+    print(f"Total de pontos do jogador: {jogador_points}")
+    print(f"Total de pontos do dealer: {dealer_points}")
+    #verificar se o jogador ou o dealer tem Blackjack
+    if jogador_points == 21 and dealer_points == 21:
+        print("Empate! Ambos têm Blackjack!")
+        return
+    elif jogador_points == 21:
+        print("Parabéns! Você tem Blackjack e venceu!")
+        return
+    elif dealer_points == 21:
+        print("O dealer tem Blackjack! Você perdeu!")
+        return
+    else:
+        #perguntar ao jogador se ele deseja 'HIT' ou 'STAND'
+        escolha = input("Deseja 'HIT' para pedir mais cartas ou 'STAND' para ficar com as cartas que ja possui? ").upper()
+        while escolha not in ['HIT', 'STAND']:
+            escolha = input("Opção inválida. Por favor, escolha 'HIT' ou 'STAND': ").upper()
+            if escolha == 'HIT':
+               #adicionar uma carta à mão do jogador
+               jogador_hand.append(baralho.retirar_carta())
+               #atualizar os pontos do jogador
+               jogador_points = sum(10 if carta.valor in ['10', 'J', 'Q', 'K'] else 11 if carta.valor == 'A' else int(carta.valor) for carta in jogador_hand)
+               print(f"Suas cartas: [{ ', '.join(str(c) for c in jogador_hand)}] - Total de pontos: {jogador_points}")
+               #verificar se o jogador estourou ou se tem Blackjack
+               if jogador_points > 21:
+                   print("Você estourou! Você perdeu!")
+                   return
+               if jogador_points == 21:
+                     print("Parabéns! Você tem Blackjack e venceu!")
+                     return
+            elif escolha == 'STAND':
+                print(f"Você escolheu STAND. Suas cartas finais: [{ ', '.join(str(c) for c in jogador_hand)}] - Total de pontos: {jogador_points}")
+                break
+            #dealer joga
+        while dealer_points < 17:
+            dealer_hand.append(baralho.retirar_carta())
+            #atualizar os pontos do dealer
+            dealer_points = sum(10 if carta.valor in ['10', 'J', 'Q', 'K'] else 11 if carta.valor == 'A' else int(carta.valor) for carta in dealer_hand)
+            print(f"Cartas do dealer: [{ ', '.join(str(c) for c in dealer_hand)}] - Total de pontos: {dealer_points}")
+            #verificar se o dealer estourou ou se tem Blackjack
+            if dealer_points > 21:
+                print("O dealer estourou! Parabéns, você venceu!")
+                return
+            if dealer_points == 21:
+                print("O dealer tem Blackjack! Você perdeu!")
+                return
+            if dealer_points - 21 < jogador_points - 21:
+                print("O dealer venceu! Você perdeu!")
+                return
+            if dealer_points - 21 > jogador_points - 21:
+                print("Parabéns! Você venceu!")
+                return
+            if dealer_points == jogador_points == 21:
+                print("Empate! Ambos têm Blackjack!")
+                return
+blackjack()
+    
+    
+                
